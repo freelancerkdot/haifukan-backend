@@ -34,13 +34,13 @@ def send_verification_email(request):
             )
 
             verification_url = f"{settings.FRONTEND_URL}/confirm?token={token}"
-            subject = "Email Verification"
+            subject = "メールアドレス確認"
             message = f"""
-Please click the link below to complete your registration:
+以下のリンクをクリックして登録を完了してください：
 
 {verification_url}
 
-This link is valid for 24 hours.
+このリンクは24時間有効です。
 """
             send_mail(
                 subject,
