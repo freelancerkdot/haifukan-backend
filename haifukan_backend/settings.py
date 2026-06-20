@@ -164,14 +164,31 @@ SIMPLE_JWT = {
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# Email Configuration (Mailtrap SMTP)
+# Email Configuration
+# Use Gmail SMTP by default (for PythonAnywhere), fallback to Mailtrap
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "live.smtp.mailtrap.io"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "api"
-EMAIL_HOST_PASSWORD = os.getenv("MAILTRAP_API_TOKEN")
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "hello@demomailtrap.co")
+
+# Gmail SMTP Configuration (Primary for PythonAnywhere)
+EMAIL_HOST = os.getenv("GMAIL_SMTP_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("GMAIL_SMTP_PORT", "587"))
+EMAIL_USE_TLS = os.getenv("GMAIL_SMTP_USE_TLS", "True") == "True"
+EMAIL_HOST_USER = os.getenv("GMAIL_SMTP_USER")
+EMAIL_HOST_PASSWORD = os.getenv("GMAIL_SMTP_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", os.getenv("GMAIL_SMTP_USER"))
+
+# Mailtrap SMTP Configuration (Fallback/Alternative)
+MAILTRAP_HOST = "live.smtp.mailtrap.io"
+MAILTRAP_PORT = 587
+MAILTRAP_USER = "api"
+MAILTRAP_PASSWORD = os.getenv("MAILTRAP_API_TOKEN")
+
+# Use Mailtrap if Gmail credentials are not set
+if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
+    EMAIL_HOST = MAILTRAP_HOST
+    EMAIL_PORT = MAILTRAP_PORT
+    EMAIL_HOST_USER = MAILTRAP_USER
+    EMAIL_HOST_PASSWORD = MAILTRAP_PASSWORD
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "hello@demomailtrap.co")
 
 # Frontend URL for email verification
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
