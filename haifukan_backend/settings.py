@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "users",
+    "core",
+    "admin",
 ]
 
 MIDDLEWARE = [
@@ -128,6 +130,12 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Media files (user uploads, e.g. sidebar menu icons / app logo)
+# On PythonAnywhere you can set MEDIA_ROOT as an env var if the default path
+# needs to differ from the project directory (e.g. outside the repo).
+MEDIA_URL = "/media/"
+MEDIA_ROOT = Path(os.getenv("MEDIA_ROOT", default=str(BASE_DIR / "media")))
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

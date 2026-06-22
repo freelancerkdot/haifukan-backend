@@ -1,0 +1,16 @@
+{
+    "response": {
+        "cursor": 0,
+        "results": [
+            {
+                "_id": "1738525753365x137544361336034980",
+                "Modified Date": "2025-02-02T19:49:13.366Z",
+                "Created Date": "2025-02-02T19:49:13.365Z",
+                "Created By": "admin_user_haifutest2_test",
+                "名称": "東京都"
+            }
+        ],
+        "count": 1,
+        "remaining": 0
+    }
+}

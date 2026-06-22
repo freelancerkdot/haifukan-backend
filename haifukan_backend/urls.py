@@ -14,10 +14,25 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.views.static import serve
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/", include("users.urls")),
+    path("api/admin/", include("admin.urls")),
+]
+
+# Serve uploaded media files through Django. This works in development and
+# also on hosts like PythonAnywhere (even with DEBUG=False) where you may not
+# want to configure a separate static mapping. For high-traffic production,
+# prefer the host's static-file mapping (/media/ -> MEDIA_ROOT) instead.
+urlpatterns += [
+    re_path(
+        r"^media/(?P<path>.*)$",
+        serve,
+        {"document_root": settings.MEDIA_ROOT},
+    ),
 ]
