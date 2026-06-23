@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "users",
     "core",
     "admin",
+    "misc"
 ]
 
 MIDDLEWARE = [

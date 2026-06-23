@@ -4,8 +4,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import AppLogo, SidebarMenuItem
-from .serializers import AppLogoSerializer, SidebarMenuItemSerializer
+from .models import AppLogo, FaqItem, SidebarMenuItem
+from .serializers import AppLogoSerializer, FaqItemSerializer, SidebarMenuItemSerializer
 
 
 class SidebarMenuItemViewSet(viewsets.ModelViewSet):
@@ -70,3 +70,24 @@ class AppLogoView(APIView):
     def patch(self, request):
         # When no logo exists yet an image is required, so disallow partial.
         return self._upsert(request, partial=AppLogo.current() is not None)
+
+
+class FaqItemViewSet(viewsets.ModelViewSet):
+    """CRUD API for the dynamic FAQ items shown on the /question page.
+
+    * ``GET`` (list/retrieve) is public so the public site can render the
+      FAQ.
+    * Write actions are open to keep the ``/admin2`` management page
+      functional out of the box.
+    """
+
+    queryset = FaqItem.objects.all()
+    serializer_class = FaqItemSerializer
+    permission_classes = [AllowAny]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == "list" and self.request.query_params.get("all") != "true":
+            qs = qs.filter(is_active=True)
+        return qs

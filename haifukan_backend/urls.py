@@ -23,6 +23,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/", include("users.urls")),
     path("api/admin/", include("admin.urls")),
+    path("api/misc/", include("misc.urls")),
+    path("api/core/", include("core.urls")),
 ]
 
 # Serve uploaded media files through Django. This works in development and

@@ -95,3 +95,40 @@ class AppLogo(models.Model):
     def current(cls):
         """Return the active logo to serve, or None if none exists."""
         return cls.objects.filter(is_active=True).order_by("-updated_at").first()
+
+
+class FaqItem(models.Model):
+    """A dynamic FAQ item rendered on the /question page.
+
+    Previously hard-coded in the frontend; now editable via the admin / API.
+    Category headers are represented by rows with empty question/answer.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    # Category name (e.g. 配布館に関する質問). When question/answer are empty,
+    # the frontend renders this as a section header.
+    category = models.CharField(max_length=100, blank=True, default="")
+
+    question = models.CharField(max_length=500, blank=True, default="")
+    answer = models.TextField(blank=True, default="")
+
+    # Display order; lower numbers appear first.
+    order = models.PositiveIntegerField(default=0)
+
+    # Toggle visibility without deleting.
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "faq_item"
+        ordering = ["order", "category", "question"]
+        verbose_name = "FAQ Item"
+        verbose_name_plural = "FAQ Items"
+
+    def __str__(self):
+        if self.question:
+            return self.question[:60]
+        return self.category or "Category header"

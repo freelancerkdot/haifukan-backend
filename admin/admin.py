@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import AppLogo, SidebarMenuItem
+from .models import AppLogo, FaqItem, SidebarMenuItem
 
 
 @admin.register(SidebarMenuItem)
@@ -35,3 +35,19 @@ class AppLogoAdmin(admin.ModelAdmin):
                 obj.image.url,
             )
         return "-"
+
+
+@admin.register(FaqItem)
+class FaqItemAdmin(admin.ModelAdmin):
+    list_display = ("order", "category", "question_preview", "is_active")
+    list_display_links = ("question_preview",)
+    list_editable = ("order", "is_active")
+    list_filter = ("category", "is_active")
+    search_fields = ("category", "question", "answer")
+    ordering = ("order", "category", "question")
+
+    @admin.display(description="Question")
+    def question_preview(self, obj):
+        if obj.question:
+            return obj.question[:60]
+        return f"[Category] {obj.category}" if obj.category else "—"

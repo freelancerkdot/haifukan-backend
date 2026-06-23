@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import AppLogo, SidebarMenuItem
+from .models import AppLogo, FaqItem, SidebarMenuItem
 
 
 class SidebarMenuItemSerializer(serializers.ModelSerializer):
@@ -38,4 +38,22 @@ class AppLogoSerializer(serializers.ModelSerializer):
     class Meta:
         model = AppLogo
         fields = ["id", "image", "alt", "is_active", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class FaqItemSerializer(serializers.ModelSerializer):
+    """Serializes FAQ items for the /question page."""
+
+    class Meta:
+        model = FaqItem
+        fields = [
+            "id",
+            "category",
+            "question",
+            "answer",
+            "order",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
         read_only_fields = ["id", "created_at", "updated_at"]
