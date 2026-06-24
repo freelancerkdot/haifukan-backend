@@ -1,6 +1,15 @@
 from django.contrib import admin
 
-from .models import Inquiry
+from .models import BoardPost, Inquiry
+
+
+@admin.register(BoardPost)
+class BoardPostAdmin(admin.ModelAdmin):
+    list_display = ("posted_date", "content", "is_active", "created_by", "created_at")
+    list_filter = ("is_active", "posted_date")
+    search_fields = ("content",)
+    ordering = ("-posted_date", "-created_at")
+    readonly_fields = ("created_at", "updated_at")
 
 
 @admin.register(Inquiry)

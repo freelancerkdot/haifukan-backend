@@ -5,6 +5,7 @@ from .views import (
     complete_registration,
     login,
     profile,
+    user_info,
     logout,
 )
 
@@ -14,5 +15,6 @@ urlpatterns = [
     path("complete-registration/", complete_registration, name="complete_registration"),
     path("login/", login, name="login"),
     path("profile/", profile, name="profile"),
+    path("user-info/<uuid:user_id>/", user_info, name="user_info"),
     path("logout/", logout, name="logout"),
 ]

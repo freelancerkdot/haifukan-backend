@@ -75,6 +75,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user",
+            "registration_number",
             "role",
             "company_name",
             "full_name",

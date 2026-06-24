@@ -1,9 +1,12 @@
 from rest_framework.routers import DefaultRouter
 
-from .views import AreaPrefectureViewSet
+from .views import AreaPrefectureViewSet, ProhibitedPropertyViewSet
 
 router = DefaultRouter()
 router.register("prefectures", AreaPrefectureViewSet, basename="prefecture")
+router.register(
+    "prohibited-properties", ProhibitedPropertyViewSet, basename="prohibited-property"
+)
 
 urlpatterns = [
     *router.urls,

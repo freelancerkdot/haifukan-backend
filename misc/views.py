@@ -2,19 +2,65 @@ import secrets
 
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.mixins import (
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+)
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
-from .models import Inquiry
+from .models import BoardPost, Inquiry
 from .serializers import (
+    BoardPostSerializer,
     InquiryEmailSerializer,
     InquirySerializer,
     InquirySubmitSerializer,
     InquiryTokenSerializer,
 )
+
+
+class BoardPostViewSet(
+    ListModelMixin,
+    RetrieveModelMixin,
+    CreateModelMixin,
+    DestroyModelMixin,
+    GenericViewSet,
+):
+    """Public read API for the notice board (お知らせ掲示板).
+
+    Only authenticated distributors may create posts, and a post may only be
+    deleted by the user who created it.
+    """
+
+    queryset = BoardPost.objects.filter(is_active=True)
+    serializer_class = BoardPostSerializer
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        profile = getattr(self.request.user, "profile", None)
+        if profile is None or profile.role != "distributor":
+            raise PermissionDenied("配布者のみ投稿できます")
+        serializer.save(
+            created_by=self.request.user,
+            posted_date=timezone.localdate(),
+        )
+
+    def perform_destroy(self, instance):
+        if instance.created_by_id != self.request.user.id:
+            raise PermissionDenied("投稿者のみ削除できます")
+        instance.delete()
 
 
 class InquiryViewSet(viewsets.ModelViewSet):

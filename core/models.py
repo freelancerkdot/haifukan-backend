@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
@@ -116,3 +117,34 @@ class AreaPlace(models.Model):
 
     def __str__(self):
         return f"{self.city}{self.name}"
+
+
+class ProhibitedProperty(models.Model):
+    """A property where flyer distribution is prohibited, registered by a client."""
+
+    IMPRESSION_CHOICES = [
+        ("kind", "優しい"),
+        ("usual", "普通"),
+        ("scared", "怖い"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    address = models.CharField(max_length=255)
+    tag_name = models.CharField(max_length=255, blank=True)
+    impression = models.CharField(max_length=20, choices=IMPRESSION_CHOICES)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="prohibited_properties",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "prohibited_property"
+        ordering = ["-created_at"]
+        verbose_name = "Prohibited Property"
+        verbose_name_plural = "Prohibited Properties"
+
+    def __str__(self):
+        return self.address

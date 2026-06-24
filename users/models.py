@@ -28,6 +28,7 @@ class UserProfile(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    registration_number = models.CharField(max_length=20, blank=True, null=True, unique=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     company_name = models.CharField(max_length=255, blank=True, null=True)
     full_name = models.CharField(max_length=255)
@@ -41,6 +42,18 @@ class UserProfile(models.Model):
 
     class Meta:
         db_table = "auth_user_profile"
+
+    def save(self, *args, **kwargs):
+        if not self.registration_number:
+            last = (
+                UserProfile.objects.exclude(registration_number__isnull=True)
+                .exclude(registration_number="")
+                .order_by("-registration_number")
+                .first()
+            )
+            next_number = int(last.registration_number) + 1 if last else 1
+            self.registration_number = f"{next_number:07d}"
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.email} - {self.get_role_display()}"

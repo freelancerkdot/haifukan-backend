@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AreaPrefecture, AreaCity, AreaPlace
+from .models import AreaPrefecture, AreaCity, AreaPlace, ProhibitedProperty
 
 
 class AreaCityInline(admin.TabularInline):
@@ -44,3 +44,11 @@ class AreaPlaceAdmin(admin.ModelAdmin):
     list_filter = ("city__prefecture", "city")
     search_fields = ("name", "name_en")
     autocomplete_fields = ("city",)
+
+
+@admin.register(ProhibitedProperty)
+class ProhibitedPropertyAdmin(admin.ModelAdmin):
+    list_display = ("address", "tag_name", "impression", "created_by", "created_at")
+    list_filter = ("impression",)
+    search_fields = ("address", "tag_name")
+    raw_id_fields = ("created_by",)

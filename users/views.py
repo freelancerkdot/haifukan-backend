@@ -164,6 +164,20 @@ def profile(request):
         )
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_info(request, user_id):
+    try:
+        profile = UserProfile.objects.select_related("user").get(user__id=user_id)
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except UserProfile.DoesNotExist:
+        return Response(
+            {"error": "Profile not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def logout(request):
