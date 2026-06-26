@@ -1,8 +1,18 @@
 import uuid
+from decimal import Decimal, ROUND_HALF_UP
 
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
+
+
+def _round_half_up(value, ndigits=0):
+    """Japanese 四捨五入 (ROUND_HALF_UP)."""
+    d = Decimal(str(float(value)))
+    if ndigits == 0:
+        return int(d.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+    exp = Decimal("0.01") if ndigits == 2 else Decimal("0.1")
+    return d.quantize(exp, rounding=ROUND_HALF_UP)
 
 
 class AreaPrefecture(models.Model):
@@ -12,6 +22,7 @@ class AreaPrefecture(models.Model):
     name = models.CharField(max_length=100, unique=True)
     name_en = models.CharField(max_length=100, blank=True)
     slug = models.SlugField(max_length=120, unique=True, blank=True)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -39,9 +50,12 @@ class AreaCity(models.Model):
         on_delete=models.CASCADE,
         related_name="cities",
     )
+    unique_id = models.CharField(max_length=100, unique=True, blank=True)
+    number = models.PositiveIntegerField(null=True, blank=True)
     name = models.CharField(max_length=100)
     name_en = models.CharField(max_length=100, blank=True)
     slug = models.SlugField(max_length=120, blank=True)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -74,9 +88,14 @@ class AreaPlace(models.Model):
         on_delete=models.CASCADE,
         related_name="places",
     )
+    unique_id = models.CharField(max_length=100, unique=True, blank=True)
+    number = models.PositiveIntegerField(null=True, blank=True)
     name = models.CharField(max_length=100)
     name_en = models.CharField(max_length=100, blank=True)
     slug = models.SlugField(max_length=120, blank=True)
+    details = models.TextField(blank=True)
+    map_url = models.URLField(blank=True)
+    is_active = models.BooleanField(default=True)
 
     # Household counts: total = collective (集合) + detached (戸建)
     total_households = models.PositiveIntegerField(default=0)
@@ -106,13 +125,51 @@ class AreaPlace(models.Model):
     class Meta:
         db_table = "area_place"
         ordering = ["city__name", "name"]
-        unique_together = ("city", "name")
         verbose_name = "Area Place"
         verbose_name_plural = "Area Places"
+
+    def calculate_estimates(self):
+        """Populate derived fields from distance_m and household counts."""
+        total = self.total_households
+        distance = self.distance_m
+
+        if not total or not distance:
+            self.duration_minutes = 0
+            self.duration_minutes_alt = None
+            self.estimated_price_yen = 0
+            self.estimated_price_yen_alt = None
+            self.unit_price_yen = Decimal("0")
+            self.unit_price_yen_alt = None
+            return
+
+        # Duration (minutes) – 四捨五入
+        self.duration_minutes = _round_half_up(
+            (distance * 1 + total * 5) / 60
+        )
+        self.duration_minutes_alt = _round_half_up(
+            (distance * 1 + total * 0.7 * 5) / 60
+        )
+
+        # Price (yen) – 四捨五入
+        self.estimated_price_yen = _round_half_up(
+            1350 * self.duration_minutes / 60
+        )
+        self.estimated_price_yen_alt = _round_half_up(
+            1350 * self.duration_minutes_alt / 60
+        )
+
+        # Unit price (yen) – 2-decimal 四捨五入
+        self.unit_price_yen = _round_half_up(
+            self.estimated_price_yen / total, ndigits=2
+        )
+        self.unit_price_yen_alt = _round_half_up(
+            self.estimated_price_yen_alt / (total * 0.7), ndigits=2
+        )
 
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name_en or self.name, allow_unicode=True)
+        self.calculate_estimates()
         super().save(*args, **kwargs)
 
     def __str__(self):

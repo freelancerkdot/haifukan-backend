@@ -15,7 +15,8 @@ class AreaPlaceInline(admin.TabularInline):
 
 @admin.register(AreaPrefecture)
 class AreaPrefectureAdmin(admin.ModelAdmin):
-    list_display = ("name", "name_en", "slug")
+    list_display = ("name", "name_en", "slug", "is_active")
+    list_filter = ("is_active",)
     search_fields = ("name", "name_en")
     prepopulated_fields = {"slug": ("name_en",)}
     inlines = [AreaCityInline]
@@ -23,9 +24,9 @@ class AreaPrefectureAdmin(admin.ModelAdmin):
 
 @admin.register(AreaCity)
 class AreaCityAdmin(admin.ModelAdmin):
-    list_display = ("name", "name_en", "prefecture")
-    list_filter = ("prefecture",)
-    search_fields = ("name", "name_en")
+    list_display = ("name", "name_en", "prefecture", "unique_id", "number", "is_active")
+    list_filter = ("prefecture", "is_active")
+    search_fields = ("name", "name_en", "unique_id")
     autocomplete_fields = ("prefecture",)
     inlines = [AreaPlaceInline]
 
@@ -35,14 +36,17 @@ class AreaPlaceAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "city",
+        "unique_id",
+        "number",
         "total_households",
         "distance_m",
         "duration_minutes",
         "estimated_price_yen",
         "unit_price_yen",
+        "is_active",
     )
-    list_filter = ("city__prefecture", "city")
-    search_fields = ("name", "name_en")
+    list_filter = ("city__prefecture", "city", "is_active")
+    search_fields = ("name", "name_en", "unique_id")
     autocomplete_fields = ("city",)
 
 
