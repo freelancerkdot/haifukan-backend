@@ -1,4 +1,5 @@
 from django.urls import path
+from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     send_verification_email,
     verify_token,
@@ -17,4 +18,5 @@ urlpatterns = [
     path("profile/", profile, name="profile"),
     path("user-info/<uuid:user_id>/", user_info, name="user_info"),
     path("logout/", logout, name="logout"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]
